@@ -144,8 +144,12 @@
 
     <script src="prompts_database.js"></script>
     <script>
+        // API Configuration
+        const API_URL = 'https://promptforge-api.onrender.com'; // Update with your Render URL
+        const USE_API = false; // Set to true after deploying backend
+        
         // Categories with counts
-        const categories = [
+        let categories = [
             { id: 'marketing', name: 'Marketing', icon: '📊', count: 10 },
             { id: 'coding', name: 'Coding', icon: '💻', count: 12 },
             { id: 'writing', name: 'Writing', icon: '✍️', count: 8 },
@@ -161,11 +165,51 @@
         let currentPromptData = null;
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCategories();
-            loadCommunityPrompts();
-            renderPrompts();
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (USE_API) {
+                await loadCategories();
+                await loadPromptsFromAPI();
+            } else {
+                renderCategories();
+                loadCommunityPrompts();
+                renderPrompts();
+            }
         });
+
+        // Load categories from API
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_URL}/api/categories`);
+                const data = await response.json();
+                categories = data.categories;
+                renderCategories();
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+                renderCategories(); // Fallback to static
+            }
+        }
+
+        // Load prompts from API
+        async function loadPromptsFromAPI() {
+            try {
+                const response = await fetch(`${API_URL}/api/prompts`);
+                const data = await response.json();
+                allPrompts = data.prompts.map(p => ({
+                    ...p,
+                    rating: 4.5,
+                    uses: p.copy_count || 0
+                }));
+                currentPrompts = [...allPrompts];
+                renderPrompts();
+                updateStats();
+            } catch (error) {
+                console.error('Failed to load prompts:', error);
+                // Fallback to static database
+                allPrompts = typeof allPromptsDatabase !== 'undefined' ? allPromptsDatabase : [];
+                currentPrompts = [...allPrompts];
+                renderPrompts();
+            }
+        }
 
         function renderCategories() {
             const grid = document.getElementById('categories-grid');
@@ -232,12 +276,24 @@
             renderPrompts();
         }
 
-        function copyPrompt() {
+        async function copyPrompt() {
             if (!currentPromptData) return;
-            navigator.clipboard.writeText(currentPromptData.text).then(() => {
+            
+            try {
+                await navigator.clipboard.writeText(currentPromptData.text);
+                
+                // Track copy via API
+                if (USE_API && currentPromptData.id) {
+                    fetch(`${API_URL}/api/prompts/${currentPromptData.id}/copy`, {
+                        method: 'POST'
+                    }).catch(err => console.error('Failed to track copy:', err));
+                }
+                
                 alert('✅ Prompt copied!');
                 closeModal('prompt-modal');
-            });
+            } catch (error) {
+                alert('Failed to copy prompt');
+            }
         }
 
         function openSubmissionModal() {
@@ -245,34 +301,62 @@
             openModal('submission-modal');
         }
 
-        function handleSubmission(event) {
+        async function handleSubmission(event) {
             event.preventDefault();
-            const newPrompt = {
-                id: Date.now(),
+            
+            const submissionData = {
                 title: document.getElementById('submit-title').value,
                 category: document.getElementById('submit-category').value,
                 text: document.getElementById('submit-prompt').value,
-                expectedOutput: document.getElementById('submit-output').value,
-                rating: 0,
-                uses: 0,
-                submitter: document.getElementById('submit-name').value || 'Anonymous',
-                type: 'community',
-                tags: []
+                expected_output: document.getElementById('submit-output').value,
+                author: document.getElementById('submit-name').value || 'Anonymous'
             };
 
-            let communityPrompts = JSON.parse(localStorage.getItem('communityPrompts') || '[]');
-            communityPrompts.push(newPrompt);
-            localStorage.setItem('communityPrompts', JSON.stringify(communityPrompts));
+            if (USE_API) {
+                // Submit via API
+                try {
+                    const response = await fetch(`${API_URL}/api/submissions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(submissionData)
+                    });
+                    
+                    if (response.ok) {
+                        document.getElementById('submission-result').innerHTML = '<div style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 16px; border-radius: 8px;">✅ Submitted successfully! Awaiting admin approval.</div>';
+                    } else {
+                        throw new Error('Submission failed');
+                    }
+                } catch (error) {
+                    document.getElementById('submission-result').innerHTML = '<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 16px; border-radius: 8px;">❌ Submission failed. Please try again.</div>';
+                }
+            } else {
+                // Fallback to localStorage
+                const newPrompt = {
+                    id: Date.now(),
+                    ...submissionData,
+                    rating: 0,
+                    uses: 0,
+                    type: 'community',
+                    tags: []
+                };
+                
+                let communityPrompts = JSON.parse(localStorage.getItem('communityPrompts') || '[]');
+                communityPrompts.push(newPrompt);
+                localStorage.setItem('communityPrompts', JSON.stringify(communityPrompts));
+                
+                allPrompts.push(newPrompt);
+                currentPrompts = [...allPrompts];
+                renderPrompts();
+                
+                document.getElementById('submission-result').innerHTML = '<div style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 16px; border-radius: 8px;">✅ Submitted successfully!</div>';
+            }
             
-            allPrompts.push(newPrompt);
-            currentPrompts = [...allPrompts];
-            renderPrompts();
-
-            document.getElementById('submission-result').innerHTML = '<div style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 16px; border-radius: 8px;">✅ Submitted successfully!</div>';
             setTimeout(() => closeModal('submission-modal'), 2000);
         }
 
         function loadCommunityPrompts() {
+            if (USE_API) return; // Skip if using API
+            
             const stored = localStorage.getItem('communityPrompts');
             if (stored) {
                 const communityPrompts = JSON.parse(stored);
@@ -280,6 +364,14 @@
                 currentPrompts = [...allPrompts];
                 document.getElementById('community-prompts').textContent = communityPrompts.length;
                 renderPrompts();
+            }
+        }
+        
+        // Update stats display
+        function updateStats() {
+            const totalPromptsEl = document.querySelector('.stat-value');
+            if (totalPromptsEl) {
+                totalPromptsEl.textContent = allPrompts.length;
             }
         }
 
