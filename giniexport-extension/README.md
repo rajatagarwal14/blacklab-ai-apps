@@ -14,8 +14,11 @@ GiniExport is a simple browser extension that adds an export button to your KW C
 
 ### For Google Chrome:
 
-1. **Download the Extension**
-   - Download all the files in the `giniexport-extension` folder to your computer
+1. **Download and Unzip the Extension**
+   - Download the **giniexport-extension.zip** file
+   - Right-click the downloaded file
+   - Select "Extract All" (Windows) or double-click to unzip (Mac)
+   - Save the unzipped folder somewhere easy to find
    - Keep them all together in one folder
 
 2. **Open Chrome Extensions Page**
@@ -39,8 +42,11 @@ GiniExport is a simple browser extension that adds an export button to your KW C
 
 ### For Mozilla Firefox:
 
-1. **Download the Extension**
-   - Download all the files in the `giniexport-extension` folder to your computer
+1. **Download and Unzip the Extension**
+   - Download the **giniexport-extension.zip** file
+   - Right-click the downloaded file
+   - Select "Extract All" (Windows) or double-click to unzip (Mac)
+   - Save the unzipped folder somewhere easy to find
    - Keep them all together in one folder
 
 2. **Open Firefox Add-ons Page**
