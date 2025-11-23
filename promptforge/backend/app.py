@@ -42,15 +42,60 @@ def require_admin(f):
     @require_auth
     def decorated_function(*args, **kwargs):
         user_email = request.user.get('email', '')
-        # Check if user is admin (you can customize this)
-        admins = ['rajatagarwal14@example.com']  # Add your admin emails
-        
-        if user_email not in admins:
-            return jsonify({'error': 'Admin access required'}), 403
-        
+        # For now, any authenticated user is admin (you can add custom claims later)
+        # To add proper admin role: use Firebase custom claims
         return f(*args, **kwargs)
     
     return decorated_function
+
+# ==================== SETUP ENDPOINT ====================
+
+@app.route('/api/setup/check', methods=['GET'])
+def check_setup():
+    """Check if admin account exists"""
+    try:
+        # List all users (limited to check if any exist)
+        page = auth.list_users()
+        user_count = len(page.users)
+        
+        return jsonify({
+            'has_admin': user_count > 0,
+            'user_count': user_count
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/setup/create-admin', methods=['POST'])
+def create_admin():
+    """Create first admin account programmatically"""
+    try:
+        data = request.json
+        email = data.get('email', 'admin@promptforge.com')
+        password = data.get('password', 'Admin@123456')
+        
+        # Check if any users already exist
+        page = auth.list_users()
+        if len(page.users) > 0:
+            return jsonify({'error': 'Admin already exists. Please login.'}), 400
+        
+        # Create admin user
+        user = auth.create_user(
+            email=email,
+            password=password,
+            display_name='PromptForge Admin'
+        )
+        
+        # Set custom claims for admin role
+        auth.set_custom_user_claims(user.uid, {'admin': True, 'role': 'admin'})
+        
+        return jsonify({
+            'success': True,
+            'message': 'Admin account created successfully',
+            'email': email,
+            'uid': user.uid
+        }), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ==================== PUBLIC API ENDPOINTS ====================
 

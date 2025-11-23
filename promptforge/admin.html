@@ -296,10 +296,25 @@
         <h2>🔐 Admin Login</h2>
         <input type="email" id="loginEmail" placeholder="Admin Email">
         <input type="password" id="loginPassword" placeholder="Password">
-        <button class="btn btn-primary" onclick="login()">Login</button>
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="login()">Login</button>
+        <button class="btn btn-secondary" style="width: 100%;" onclick="showFirstTimeSetup()">First Time Setup</button>
         <p style="margin-top: 20px; color: #94a3b8; font-size: 0.9rem;">
             PromptForge Admin Panel
         </p>
+    </div>
+
+    <!-- First Time Setup Section -->
+    <div id="setupSection" class="login-section hidden">
+        <h2>🚀 First Time Setup</h2>
+        <p style="color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">
+            Create your admin account
+        </p>
+        <input type="email" id="setupEmail" placeholder="Admin Email" value="admin@promptforge.com">
+        <input type="password" id="setupPassword" placeholder="Password (min 6 chars)" value="">
+        <input type="password" id="setupPasswordConfirm" placeholder="Confirm Password" value="">
+        <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="createAdminAccount()">Create Admin Account</button>
+        <button class="btn btn-secondary" style="width: 100%;" onclick="backToLogin()">Back to Login</button>
+        <div id="setupStatus" style="margin-top: 15px; padding: 10px; border-radius: 8px; display: none;"></div>
     </div>
 
     <!-- Admin Dashboard -->
@@ -439,15 +454,108 @@
             }
         });
 
+        // Show First Time Setup
+        function showFirstTimeSetup() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('setupSection').classList.remove('hidden');
+        }
+
+        // Back to Login
+        function backToLogin() {
+            document.getElementById('setupSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        // Create Admin Account
+        async function createAdminAccount() {
+            const email = document.getElementById('setupEmail').value;
+            const password = document.getElementById('setupPassword').value;
+            const confirmPassword = document.getElementById('setupPasswordConfirm').value;
+            const statusDiv = document.getElementById('setupStatus');
+
+            // Validation
+            if (!email || !password || !confirmPassword) {
+                showSetupStatus('Please fill all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showSetupStatus('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showSetupStatus('Passwords do not match', 'error');
+                return;
+            }
+
+            try {
+                showSetupStatus('Creating admin account...', 'info');
+                
+                // Create user in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                showSetupStatus('✓ Admin account created successfully!', 'success');
+                
+                // Auto-login after 2 seconds
+                setTimeout(async () => {
+                    authToken = await user.getIdToken();
+                    showSetupStatus('Logging in...', 'info');
+                    // Firebase will auto-trigger onAuthStateChanged
+                }, 2000);
+
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    showSetupStatus('This email is already registered. Please login instead.', 'error');
+                } else if (error.code === 'auth/invalid-email') {
+                    showSetupStatus('Invalid email address', 'error');
+                } else if (error.code === 'auth/weak-password') {
+                    showSetupStatus('Password is too weak', 'error');
+                } else {
+                    showSetupStatus('Error: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Show Setup Status
+        function showSetupStatus(message, type) {
+            const statusDiv = document.getElementById('setupStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = message;
+            
+            if (type === 'error') {
+                statusDiv.style.background = '#ef4444';
+                statusDiv.style.color = 'white';
+            } else if (type === 'success') {
+                statusDiv.style.background = '#10b981';
+                statusDiv.style.color = 'white';
+            } else {
+                statusDiv.style.background = '#6366f1';
+                statusDiv.style.color = 'white';
+            }
+        }
+
         // Login
         async function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return;
+            }
+
             try {
                 await auth.signInWithEmailAndPassword(email, password);
             } catch (error) {
-                alert('Login failed: ' + error.message);
+                if (error.code === 'auth/user-not-found') {
+                    alert('No admin account found. Please use First Time Setup to create one.');
+                } else if (error.code === 'auth/wrong-password') {
+                    alert('Incorrect password');
+                } else {
+                    alert('Login failed: ' + error.message);
+                }
             }
         }
 
