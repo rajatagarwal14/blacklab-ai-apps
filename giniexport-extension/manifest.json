@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "GiniExport - KW CRM Exporter",
+  "version": "1.0.0",
+  "description": "Export KW CRM opportunities with one click. Powered by Gini AI.",
+  "permissions": [
+    "activeTab",
+    "downloads"
+  ],
+  "host_permissions": [
+    "*://*.kw.com/*",
+    "*://command.kw.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.kw.com/*", "*://command.kw.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  }
+}
