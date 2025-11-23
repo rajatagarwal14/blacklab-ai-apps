@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptForge Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        header {
+            background: #1e293b;
+            padding: 20px 0;
+            border-bottom: 2px solid #334155;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 { color: #f97316; font-size: 1.8rem; }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-email {
+            background: #334155;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        /* Login Section */
+        .login-section {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .login-section h2 { margin-bottom: 30px; color: #f97316; }
+        
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        
+        .btn-primary {
+            background: #f97316;
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #ea580c; }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6366f1;
+            color: white;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f97316;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #334155;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #f97316;
+            border-bottom-color: #f97316;
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Submission Cards */
+        .submissions-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .submission-card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+        }
+        
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .submission-title {
+            font-size: 1.3rem;
+            color: #f97316;
+            margin-bottom: 5px;
+        }
+        
+        .submission-meta {
+            display: flex;
+            gap: 15px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .submission-text {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .submission-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Analytics Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: #334155;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        
+        th {
+            font-weight: 600;
+            color: #f97316;
+        }
+        
+        tr:not(:last-child) {
+            border-bottom: 1px solid #334155;
+        }
+        
+        tbody tr:hover {
+            background: #334155;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: #10b981; color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+        .badge-info { background: #6366f1; color: white; }
+        
+        .hidden { display: none !important; }
+        
+        /* Rejection Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            margin: 15px 0;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+        <h2>🔐 Admin Login</h2>
+        <input type="email" id="loginEmail" placeholder="Admin Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button class="btn btn-primary" onclick="login()">Login</button>
+        <p style="margin-top: 20px; color: #94a3b8; font-size: 0.9rem;">
+            PromptForge Admin Panel
+        </p>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <h1>🎯 PromptForge Admin</h1>
+                    <div class="user-info">
+                        <span class="user-email" id="userEmail"></span>
+                        <button class="btn btn-danger" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Prompts</div>
+                    <div class="stat-value" id="totalPrompts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Review</div>
+                    <div class="stat-value" id="pendingReview">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Copies</div>
+                    <div class="stat-value" id="totalCopies">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Submissions</div>
+                    <div class="stat-value" id="totalSubmissions">0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('pending')">Pending Submissions</button>
+                <button class="tab" onclick="switchTab('analytics')">Analytics</button>
+                <button class="tab" onclick="switchTab('popular')">Popular Prompts</button>
+            </div>
+
+            <!-- Pending Submissions Tab -->
+            <div id="pendingTab" class="tab-content active">
+                <div class="submissions-grid" id="submissionsGrid">
+                    <!-- Submissions will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analyticsTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">📊 Category Breakdown</h2>
+                <table id="categoryTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Popular Prompts Tab -->
+            <div id="popularTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">🔥 Most Popular Prompts</h2>
+                <table id="popularTable">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Copies</th>
+                            <th>Author</th>
+                        </tr>
+                    </thead>
+                    <tbody id="popularTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: #f97316;">Reject Submission</h3>
+            <p style="color: #94a3b8; margin-bottom: 15px;">Please provide a reason for rejection:</p>
+            <textarea id="rejectionReason" placeholder="e.g., Too vague, duplicate content, inappropriate..."></textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeRejectionModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmReject()">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase Config - Replace with your config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // API Base URL
+        const API_URL = 'http://localhost:5000';  // Change to your Render URL in production
+
+        let currentUser = null;
+        let authToken = null;
+        let currentSubmissionId = null;
+
+        // Check auth state
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                authToken = await user.getIdToken();
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                document.getElementById('userEmail').textContent = user.email;
+                loadDashboard();
+            } else {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+            }
+        });
+
+        // Login
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        // Logout
+        function logout() {
+            auth.signOut();
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            await Promise.all([
+                loadStats(),
+                loadPendingSubmissions(),
+                loadAnalytics(),
+                loadPopularPrompts()
+            ]);
+        }
+
+        // Load Stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/analytics/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                document.getElementById('totalPrompts').textContent = data.total_prompts;
+                document.getElementById('pendingReview').textContent = data.pending_review;
+                document.getElementById('totalCopies').textContent = data.total_copies;
+                document.getElementById('totalSubmissions').textContent = data.total_submissions;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Load Pending Submissions
+        async function loadPendingSubmissions() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/submissions`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                const grid = document.getElementById('submissionsGrid');
+                
+                if (data.submissions.length === 0) {
+                    grid.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 40px;">No pending submissions</p>';
+                    return;
+                }
+
+                grid.innerHTML = data.submissions.map(sub => `
+                    <div class="submission-card">
+                        <div class="submission-header">
+                            <div>
+                                <h3 class="submission-title">${sub.title}</h3>
+                                <div class="submission-meta">
+                                    <span>📁 ${sub.category}</span>
+                                    <span>👤 ${sub.author}</span>
+                                    <span>📅 ${new Date(sub.submitted_at._seconds * 1000).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submission-text">${sub.text}</div>
+                        ${sub.expected_output ? `<div style="margin-bottom: 15px;"><strong>Expected Output:</strong><br><span style="color: #94a3b8;">${sub.expected_output}</span></div>` : ''}
+                        <div class="submission-actions">
+                            <button class="btn btn-success" onclick="approveSubmission('${sub.id}')">✓ Approve</button>
+                            <button class="btn btn-danger" onclick="showRejectModal('${sub.id}')">✗ Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load submissions:', error);
+            }
+        }
+
+        // Approve Submission
+        async function approveSubmission(id) {
+            if (!confirm('Approve this submission?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/submissions/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    alert('Submission approved!');
+                    loadDashboard();
+                } else {
+                    alert('Failed to approve submission');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Show Reject Modal
+        function showRejectModal(id) {
+            currentSubmissionId = id;
+            document.getElementById('rejectionModal').classList.add('active');
+        }
+
+        // Close Reject Modal
+        function closeRejectionModal() {
+            document.getElementById('rejectionModal').classList.remove('active');
+            document.getElementById('rejectionReason').value = '';
+            currentSubmissionId = null;
+        }
+
+        // Confirm Reject
+        async function confirmReject() {
+            const reason = document.getElementById('rejectionReason').value;
+            
+            if (!reason) {
+                alert('Please provide a reason');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/submissions/${currentSubmissionId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                if (response.ok) {
+                    alert('Submission rejected');
+                    closeRejectionModal();
+                    loadDashboard();
+                } else {
+                    alert('Failed to reject submission');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Load Analytics
+        async function loadAnalytics() {
+            try {
+                const response = await fetch(`${API_URL}/api/analytics/stats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                const tbody = document.getElementById('categoryTableBody');
+                const total = data.total_prompts;
+
+                tbody.innerHTML = Object.entries(data.categories).map(([category, count]) => `
+                    <tr>
+                        <td>${category}</td>
+                        <td>${count}</td>
+                        <td>${((count / total) * 100).toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        // Load Popular Prompts
+        async function loadPopularPrompts() {
+            try {
+                const response = await fetch(`${API_URL}/api/analytics/popular?limit=20`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                const tbody = document.getElementById('popularTableBody');
+                tbody.innerHTML = data.prompts.map(prompt => `
+                    <tr>
+                        <td>${prompt.title}</td>
+                        <td><span class="badge badge-info">${prompt.category}</span></td>
+                        <td><strong>${prompt.copy_count || 0}</strong></td>
+                        <td>${prompt.author || 'Anonymous'}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load popular prompts:', error);
+            }
+        }
+
+        // Switch Tab
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+    </script>
+</body>
+</html>
