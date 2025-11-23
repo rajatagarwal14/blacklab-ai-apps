@@ -275,7 +275,7 @@
             <div class="app-icon">📊</div>
             <h2 class="app-title">InsightIQ Analytics</h2>
             <p class="app-subtitle">AI-Driven Business Intelligence Platform</p>
-            <div class="status ready">🚀 READY</div>
+            <div class="status live">✓ LIVE</div>
             
             <p class="app-description">
                 Transform your data into actionable insights with AI-powered analysis. 
@@ -291,7 +291,7 @@
                 <li>Beautiful, shareable reports</li>
             </ul>
 
-            <a href="#" class="btn" onclick="alert('Deploying to Render soon! Coming live shortly.')">Launch InsightIQ →</a>
+            <a href="https://insightiq-analytics-1.onrender.com" class="btn" target="_blank">Launch InsightIQ →</a>
         </div>
 
         <!-- CompressIQ Tools Card -->
@@ -344,7 +344,7 @@
                 formData.append('quality', 'printer'); // High quality
                 
                 // Send to compression API
-                const response = await fetch('http://localhost:5002/compress', {
+                const response = await fetch('https://compressiq-tools.onrender.com/compress', {
                     method: 'POST',
                     body: formData
                 });
@@ -371,7 +371,7 @@
                 alert(`✅ Compression Complete!\\n\\nOriginal: ${originalSize} MB\\nCompressed: ${compressedSize} MB\\nReduction: ${reduction}\\n\\nFile downloaded!`);
                 
             } catch (error) {
-                alert(`❌ Compression failed: ${error.message}\\n\\nMake sure the compression server is running at localhost:5002`);
+                alert(`❌ Compression failed: ${error.message}\\n\\nPlease try again or contact support.`);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
