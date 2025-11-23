@@ -1,0 +1,6 @@
+<svg width="768" height="768" viewBox="0 0 768 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="768" height="768" fill="#000000"/>
+  <path d="M280 180 L360 120 L520 120 L600 180 L600 280 L520 220 L360 220 L280 280 Z M330 240 Q330 200 350 200 Q370 200 370 240 M410 240 L410 360 M450 240 L450 360 M490 240 L490 360 M360 360 L520 360 L560 420 L560 480 L520 540 L360 540 L320 480 L320 420 Z" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="150" y="580" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white">BLACK</text>
+  <text x="230" y="680" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white">LAB AI</text>
+</svg>

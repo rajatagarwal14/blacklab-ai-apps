@@ -31,9 +31,16 @@
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-size: 24px;
             font-weight: bold;
             color: #00d4ff;
+        }
+
+        .logo img {
+            border-radius: 8px;
         }
 
         .nav-links a {
@@ -223,7 +230,10 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">🧪 BLACK LAB AI</div>
+        <div class="logo">
+            <img src="logo.svg" alt="Black Lab AI" width="50" height="50">
+            <span>BLACK LAB AI</span>
+        </div>
         <div class="nav-links">
             <a href="https://blacklabai.com">Main Site</a>
             <a href="#apps">Our Apps</a>
