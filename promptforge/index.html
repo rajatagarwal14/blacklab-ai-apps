@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptForge - Your Ultimate AI Prompt Library</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #ec4899;
+            --success: #10b981; --bg-primary: #ffffff; --bg-secondary: #f9fafb;
+            --text-primary: #111827; --text-secondary: #6b7280; --border: #e5e7eb;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1); --radius: 12px;
+        }
+        body.dark-mode {
+            --bg-primary: #111827; --bg-secondary: #1f2937; --text-primary: #f9fafb;
+            --text-secondary: #d1d5db; --border: #374151;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-secondary); color: var(--text-primary); line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        header { background: var(--bg-primary); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-secondary); border: none; cursor: pointer; }
+        .hero { padding: 60px 0; text-align: center; }
+        .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .categories-grid, .prompts-grid { display: grid; gap: 24px; margin-top: 32px; }
+        .categories-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .prompts-grid { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
+        .category-card, .prompt-card { background: var(--bg-primary); border-radius: var(--radius); padding: 24px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .category-card:hover, .prompt-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-primary); border-radius: var(--radius); width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; padding: 32px; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 12px 16px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; margin-top: 8px; }
+        .form-textarea { min-height: 120px; font-family: 'Courier New', monospace; }
+        @media (max-width: 768px) { .prompts-grid, .categories-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo" onclick="showAllPrompts(); return false;">
+                    <div class="logo-icon">✨</div>
+                    <span>PromptForge</span>
+                </a>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-primary" onclick="openSubmissionModal()">➕ Submit Prompt</button>
+                    <button class="btn-icon" onclick="toggleDarkMode()"><span id="theme-icon">🌙</span></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Your Ultimate AI Prompt Library</h1>
+            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 24px;">Browse, use, and contribute to the ultimate AI prompt library</p>
+            <div style="display: flex; justify-content: center; gap: 48px; margin-bottom: 32px;">
+                <div><div class="stat-value" id="total-prompts">70+</div><div style="font-size: 0.875rem; color: var(--text-secondary);">AI Prompts</div></div>
+                <div><div class="stat-value">8</div><div style="font-size: 0.875rem; color: var(--text-secondary);">Categories</div></div>
+                <div><div class="stat-value" id="community-prompts">0</div><div style="font-size: 0.875rem; color: var(--text-secondary);">Community</div></div>
+            </div>
+            <input type="text" placeholder="Search prompts..." style="max-width: 600px; width: 100%; padding: 16px 20px; border-radius: 12px; border: 2px solid var(--border); font-size: 16px;" oninput="searchPrompts(this.value)">
+        </div>
+    </section>
+
+    <section style="padding: 40px 0;">
+        <div class="container">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 24px;">Browse by Category</h2>
+            <div class="categories-grid" id="categories-grid"></div>
+        </div>
+    </section>
+
+    <section style="padding: 40px 0;">
+        <div class="container">
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 24px;" id="prompts-title">All Prompts</h2>
+            <div class="prompts-grid" id="prompts-grid"></div>
+        </div>
+    </section>
+
+    <div class="modal" id="prompt-modal">
+        <div class="modal-content">
+            <button style="position: absolute; top: 24px; right: 24px; width: 32px; height: 32px; border: none; background: var(--bg-secondary); border-radius: 6px; cursor: pointer; font-size: 20px;" onclick="closeModal('prompt-modal')">×</button>
+            <h2 id="modal-prompt-title" style="font-size: 1.75rem; font-weight: 700; margin-bottom: 24px;"></h2>
+            <div id="modal-prompt-text" style="background: var(--bg-secondary); padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.875rem; white-space: pre-wrap; margin-bottom: 24px; max-height: 400px; overflow-y: auto;"></div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-primary" onclick="copyPrompt()">📋 Copy</button>
+                <button class="btn" style="background: var(--bg-secondary);" onclick="closeModal('prompt-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="submission-modal">
+        <div class="modal-content">
+            <button style="position: absolute; top: 24px; right: 24px; width: 32px; height: 32px; border: none; background: var(--bg-secondary); border-radius: 6px; cursor: pointer; font-size: 20px;" onclick="closeModal('submission-modal')">×</button>
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 24px;">✨ Submit Your Prompt</h2>
+            <form onsubmit="handleSubmission(event)">
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Prompt Title <span style="color: red;">*</span></label>
+                    <input type="text" class="form-input" id="submit-title" required maxlength="100">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Category <span style="color: red;">*</span></label>
+                    <select class="form-select" id="submit-category" required>
+                        <option value="">Select category</option>
+                        <option value="marketing">📊 Marketing</option>
+                        <option value="coding">💻 Coding</option>
+                        <option value="writing">✍️ Writing</option>
+                        <option value="business">💼 Business</option>
+                        <option value="project-management">📋 Project Management</option>
+                        <option value="design">🎨 Design</option>
+                        <option value="education">🎓 Education</option>
+                        <option value="data-science">📈 Data Science</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Your Prompt <span style="color: red;">*</span></label>
+                    <textarea class="form-textarea" id="submit-prompt" required minlength="50" maxlength="5000"></textarea>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Expected Output (Optional)</label>
+                    <textarea class="form-textarea" id="submit-output" maxlength="2000"></textarea>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: 600;">Your Name (Optional)</label>
+                    <input type="text" class="form-input" id="submit-name" placeholder="Anonymous">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary">✨ Submit</button>
+                    <button type="button" class="btn" style="background: var(--bg-secondary);" onclick="closeModal('submission-modal')">Cancel</button>
+                </div>
+                <div id="submission-result" style="margin-top: 16px;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="prompts_database.js"></script>
+    <script>
+        // Categories with counts
+        const categories = [
+            { id: 'marketing', name: 'Marketing', icon: '📊', count: 10 },
+            { id: 'coding', name: 'Coding', icon: '💻', count: 12 },
+            { id: 'writing', name: 'Writing', icon: '✍️', count: 8 },
+            { id: 'business', name: 'Business', icon: '💼', count: 8 },
+            { id: 'project-management', name: 'Project Management', icon: '📋', count: 8 },
+            { id: 'design', name: 'Design', icon: '🎨', count: 8 },
+            { id: 'education', name: 'Education', icon: '🎓', count: 6 },
+            { id: 'data-science', name: 'Data Science', icon: '📈', count: 6 }
+        ];
+
+        let allPrompts = typeof allPromptsDatabase !== 'undefined' ? allPromptsDatabase : [];
+        let currentPrompts = [...allPrompts];
+        let currentPromptData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            loadCommunityPrompts();
+            renderPrompts();
+        });
+
+        function renderCategories() {
+            const grid = document.getElementById('categories-grid');
+            grid.innerHTML = categories.map(cat => `
+                <div class="category-card" onclick="filterByCategory('${cat.id}')">
+                    <div style="font-size: 2.5rem; margin-bottom: 16px;">${cat.icon}</div>
+                    <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">${cat.name}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">${cat.count} prompts</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPrompts() {
+            const grid = document.getElementById('prompts-grid');
+            if (currentPrompts.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 60px; grid-column: 1 / -1;"><h3>No prompts found</h3></div>';
+                return;
+            }
+            grid.innerHTML = currentPrompts.map(prompt => `
+                <div class="prompt-card" onclick="showPromptDetail(${prompt.id})">
+                    <div style="font-size: 1.125rem; font-weight: 600; margin-bottom: 12px;">${prompt.title}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${prompt.text.substring(0, 150)}...</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <div style="display: flex; gap: 16px; font-size: 0.875rem; color: var(--text-secondary);">
+                            <span>⭐ ${prompt.rating.toFixed(1)}</span>
+                            <span>👥 ${formatNumber(prompt.uses)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showPromptDetail(id) {
+            const prompt = allPrompts.find(p => p.id === id);
+            if (!prompt) return;
+            currentPromptData = prompt;
+            document.getElementById('modal-prompt-title').textContent = prompt.title;
+            document.getElementById('modal-prompt-text').textContent = prompt.text;
+            openModal('prompt-modal');
+        }
+
+        function filterByCategory(categoryId) {
+            currentPrompts = allPrompts.filter(p => p.category === categoryId);
+            const category = categories.find(c => c.id === categoryId);
+            document.getElementById('prompts-title').textContent = `${category.icon} ${category.name}`;
+            renderPrompts();
+        }
+
+        function searchPrompts(query) {
+            if (!query.trim()) {
+                currentPrompts = [...allPrompts];
+            } else {
+                const q = query.toLowerCase();
+                currentPrompts = allPrompts.filter(p => 
+                    p.title.toLowerCase().includes(q) || p.text.toLowerCase().includes(q)
+                );
+            }
+            renderPrompts();
+        }
+
+        function showAllPrompts() {
+            currentPrompts = [...allPrompts];
+            document.getElementById('prompts-title').textContent = 'All Prompts';
+            renderPrompts();
+        }
+
+        function copyPrompt() {
+            if (!currentPromptData) return;
+            navigator.clipboard.writeText(currentPromptData.text).then(() => {
+                alert('✅ Prompt copied!');
+                closeModal('prompt-modal');
+            });
+        }
+
+        function openSubmissionModal() {
+            document.getElementById('submission-result').innerHTML = '';
+            openModal('submission-modal');
+        }
+
+        function handleSubmission(event) {
+            event.preventDefault();
+            const newPrompt = {
+                id: Date.now(),
+                title: document.getElementById('submit-title').value,
+                category: document.getElementById('submit-category').value,
+                text: document.getElementById('submit-prompt').value,
+                expectedOutput: document.getElementById('submit-output').value,
+                rating: 0,
+                uses: 0,
+                submitter: document.getElementById('submit-name').value || 'Anonymous',
+                type: 'community',
+                tags: []
+            };
+
+            let communityPrompts = JSON.parse(localStorage.getItem('communityPrompts') || '[]');
+            communityPrompts.push(newPrompt);
+            localStorage.setItem('communityPrompts', JSON.stringify(communityPrompts));
+            
+            allPrompts.push(newPrompt);
+            currentPrompts = [...allPrompts];
+            renderPrompts();
+
+            document.getElementById('submission-result').innerHTML = '<div style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 16px; border-radius: 8px;">✅ Submitted successfully!</div>';
+            setTimeout(() => closeModal('submission-modal'), 2000);
+        }
+
+        function loadCommunityPrompts() {
+            const stored = localStorage.getItem('communityPrompts');
+            if (stored) {
+                const communityPrompts = JSON.parse(stored);
+                allPrompts = [...allPrompts, ...communityPrompts];
+                currentPrompts = [...allPrompts];
+                document.getElementById('community-prompts').textContent = communityPrompts.length;
+                renderPrompts();
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('theme-icon').textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num;
+        }
+    </script>
+</body>
+</html>

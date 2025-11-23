@@ -412,12 +412,12 @@
             </button>
         </div>
 
-        <!-- PromptForge Card - COMING SOON -->
-        <div class="app-card promptforge coming-soon">
+        <!-- PromptForge Card - LIVE! -->
+        <div class="app-card promptforge" onclick="window.location.href='promptforge/index.html'">
             <div class="app-icon">🎯</div>
             <h2 class="app-title">PromptForge</h2>
             <p class="app-subtitle">Your Ultimate AI Prompt Library</p>
-            <div class="status coming-soon">🚀 COMING SOON</div>
+            <div class="status live">✨ LIVE NOW</div>
             
             <p class="app-description">
                 Unlock the full potential of AI with our curated collection of expert prompts. 
@@ -434,9 +434,7 @@
             </ul>
 
             <div class="notify-form">
-                <input type="email" placeholder="Enter your email for early access" id="promptforgeEmail">
-                <button onclick="notifyMe('promptforge')">Notify Me</button>
-            </div>
+            <button class="cta-button" onclick="event.stopPropagation(); window.open('promptforge/index.html', '_blank')">Launch PromptForge →</button>
 
         <!-- GiniExport Extension Card -->
         <div class="app-card giniexport">
