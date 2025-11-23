@@ -419,17 +419,36 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
     <script>
-        // Firebase Config - Replace with your config
+        // ========================================
+        // 🔥 FIREBASE CONFIG - REPLACE THIS! 🔥
+        // ========================================
+        // Get your config from: https://console.firebase.google.com
+        // → Project Settings → General → Your apps → Firebase SDK snippet → Config
+        
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "YOUR_API_KEY",                    // Replace with your API key
+            authDomain: "YOUR_PROJECT.firebaseapp.com", // Replace with your auth domain
+            projectId: "YOUR_PROJECT_ID",               // Replace with your project ID
+            storageBucket: "YOUR_PROJECT.appspot.com",  // Replace with your storage bucket
+            messagingSenderId: "YOUR_SENDER_ID",        // Replace with your sender ID
+            appId: "YOUR_APP_ID"                        // Replace with your app ID
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Check if Firebase is configured
+        const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+        
+        if (!isFirebaseConfigured) {
+            console.error('❌ Firebase is not configured!');
+            alert('⚠️ Firebase Setup Required!\n\nPlease follow these steps:\n\n1. Go to https://console.firebase.google.com\n2. Create/select your project\n3. Enable Authentication → Email/Password\n4. Go to Project Settings → General\n5. Copy your Firebase config\n6. Edit admin.html line 423\n7. Replace the firebaseConfig values\n8. Save and refresh\n\nSee BACKEND_SETUP.md for detailed instructions.');
+        } else {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                console.log('✅ Firebase initialized successfully');
+            } catch (error) {
+                console.error('❌ Firebase initialization failed:', error);
+                alert('Firebase configuration error: ' + error.message);
+            }
+        }
         const auth = firebase.auth();
 
         // API Base URL
@@ -472,6 +491,11 @@
             const password = document.getElementById('setupPassword').value;
             const confirmPassword = document.getElementById('setupPasswordConfirm').value;
             const statusDiv = document.getElementById('setupStatus');
+
+            if (!isFirebaseConfigured) {
+                showSetupStatus('Firebase is not configured. Please update the config first.', 'error');
+                return;
+            }
 
             // Validation
             if (!email || !password || !confirmPassword) {
@@ -546,13 +570,25 @@
                 return;
             }
 
+            if (!isFirebaseConfigured) {
+                alert('❌ Firebase is not configured!\n\nPlease update the Firebase config in admin.html (line 423)\n\nSee ADMIN_SETUP.md for instructions.');
+                return;
+            }
+
             try {
                 await auth.signInWithEmailAndPassword(email, password);
             } catch (error) {
+                console.error('Login error:', error);
+                
                 if (error.code === 'auth/user-not-found') {
-                    alert('No admin account found. Please use First Time Setup to create one.');
+                    const createAccount = confirm('No admin account found. Do you want to create one now?');
+                    if (createAccount) {
+                        showFirstTimeSetup();
+                    }
                 } else if (error.code === 'auth/wrong-password') {
-                    alert('Incorrect password');
+                    alert('❌ Incorrect password');
+                } else if (error.code === 'auth/invalid-api-key' || error.message.includes('api-key-not-valid')) {
+                    alert('❌ Firebase API key is invalid!\n\nPlease configure Firebase:\n\n1. Go to https://console.firebase.google.com\n2. Select your project\n3. Go to Project Settings → General\n4. Copy your Firebase config\n5. Edit admin.html (line 423)\n6. Replace the config values\n7. Save and refresh');
                 } else {
                     alert('Login failed: ' + error.message);
                 }
