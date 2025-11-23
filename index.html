@@ -119,6 +119,31 @@
             --accent-color: #f59e0b;
         }
 
+        .app-card.promptforge {
+            --accent-color: #ec4899;
+        }
+
+        .app-card.coming-soon {
+            opacity: 0.8;
+        }
+
+        .app-card.coming-soon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.02) 10px,
+                rgba(255, 255, 255, 0.02) 20px
+            );
+            pointer-events: none;
+        }
+
         .app-icon {
             font-size: 60px;
             margin-bottom: 20px;
@@ -182,6 +207,18 @@
             border: 1px solid #00d4ff;
         }
 
+        .status.coming-soon {
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+            border: 1px solid #ec4899;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         .btn {
             display: inline-block;
             padding: 15px 40px;
@@ -198,6 +235,52 @@
         .btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .btn.disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn.disabled:hover {
+            transform: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .notify-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .notify-form input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid #444;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1em;
+        }
+
+        .notify-form input::placeholder {
+            color: #666;
+        }
+
+        .notify-form button {
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notify-form button:hover {
+            transform: translateY(-2px);
         }
 
         .footer {
@@ -224,6 +307,10 @@
 
             .app-card {
                 padding: 30px;
+            }
+
+            .notify-form {
+                flex-direction: column;
             }
         }
     </style>
@@ -272,7 +359,7 @@
 
         <!-- InsightIQ Analytics Card -->
         <div class="app-card insightiq">
-            <div class="app-icon">📊</div>
+            <div class="app-icon">��</div>
             <h2 class="app-title">InsightIQ Analytics</h2>
             <p class="app-subtitle">AI-Driven Business Intelligence Platform</p>
             <div class="status live">✓ LIVE</div>
@@ -320,6 +407,33 @@
                 📤 Upload & Compress →
             </button>
         </div>
+
+        <!-- PromptForge Card - COMING SOON -->
+        <div class="app-card promptforge coming-soon">
+            <div class="app-icon">🎯</div>
+            <h2 class="app-title">PromptForge</h2>
+            <p class="app-subtitle">Your Ultimate AI Prompt Library</p>
+            <div class="status coming-soon">🚀 COMING SOON</div>
+            
+            <p class="app-description">
+                Unlock the full potential of AI with our curated collection of expert prompts. 
+                Browse, customize, and save thousands of proven prompts for ChatGPT, Claude, 
+                and other AI models. From marketing to coding, we've got you covered.
+            </p>
+
+            <ul class="features">
+                <li>10,000+ curated AI prompts across categories</li>
+                <li>One-click copy and customize</li>
+                <li>Save and organize your favorites</li>
+                <li>Community-voted best prompts</li>
+                <li>Regular updates with trending prompts</li>
+            </ul>
+
+            <div class="notify-form">
+                <input type="email" placeholder="Enter your email for early access" id="promptforgeEmail">
+                <button onclick="notifyMe('promptforge')">Notify Me</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -361,23 +475,40 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = fileName.replace(/\\.([^.]+)$/, '_compressed.$1');
+                a.download = fileName.replace(/\.([^.]+)$/, '_compressed.$1');
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 
                 // Show success message
-                alert(`✅ Compression Complete!\\n\\nOriginal: ${originalSize} MB\\nCompressed: ${compressedSize} MB\\nReduction: ${reduction}\\n\\nFile downloaded!`);
+                alert(`✅ Compression Complete!\n\nOriginal: ${originalSize} MB\nCompressed: ${compressedSize} MB\nReduction: ${reduction}\n\nFile downloaded!`);
                 
             } catch (error) {
-                alert(`❌ Compression failed: ${error.message}\\n\\nPlease try again or contact support.`);
+                alert(`❌ Compression failed: ${error.message}\n\nPlease try again or contact support.`);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 e.target.value = '';
             }
         });
+
+        function notifyMe(appName) {
+            const email = document.getElementById(appName + 'Email').value;
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Store email (you can integrate with a backend service)
+            console.log(`Email notification requested for ${appName}: ${email}`);
+            
+            // Show success message
+            alert(`🎉 Thanks for your interest!\n\nWe'll notify you at ${email} when ${appName === 'promptforge' ? 'PromptForge' : appName} launches!`);
+            
+            // Clear input
+            document.getElementById(appName + 'Email').value = '';
+        }
     </script>
 
     <div class="footer">
